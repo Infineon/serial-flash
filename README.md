@@ -14,8 +14,14 @@ Provides functions for interacting with an external flash connected through its 
 1. Add \#include "cy_serial_flash_qspi.h"
 2. See the [PSoC 6 MCU: QSPI Flash Read and Write](https://github.com/cypresssemiconductorco/mtb-example-psoc6-qspi-readwrite) code example to learn using this library
 
+**NOTE:**  
+If you delete the contents of the GeneratedSource directory inside the BSP, you must re-generate the memory configuration files *cycfg_qspi_memslot.c/.h*. To do this from inside the ModusToolbox IDE, open the QSPI Configurator tool from the Quick Panel and press **Ctrl+S** or click **File > Save**. If you open the tool outside the IDE, you need to first open the *design.cyqspi* file in the tool. To do this, click **File > Import** and then locate the file inside the BSP under *COMPONENT_BSP_DESIGN_MODUS* directory. 
+
 ### More information
 
+* [API Reference Guide](https://cypresssemiconductorco.github.io/serial-flash/html/modules.html)
+* [Cypress Semiconductor](http://www.cypress.com)
+* [Cypress Semiconductor GitHub](https://github.com/cypresssemiconductorco)
 * [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
 * [PSoC 6 Code Examples using ModusToolbox IDE](https://github.com/cypresssemiconductorco/Code-Examples-for-ModusToolbox-Software)
 * [PSoC 6 Middleware](https://github.com/cypresssemiconductorco/psoc6-middleware)
