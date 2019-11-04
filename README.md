@@ -19,7 +19,7 @@ If you delete the contents of the GeneratedSource directory inside the BSP, you 
 
 ### More information
 
-* [API Reference Guide](https://cypresssemiconductorco.github.io/serial-falsh/html/index.html)
+* [API Reference Guide](https://cypresssemiconductorco.github.io/serial-flash/html/index.html)
 * [Cypress Semiconductor](http://www.cypress.com)
 * [Cypress Semiconductor GitHub](https://github.com/cypresssemiconductorco)
 * [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
