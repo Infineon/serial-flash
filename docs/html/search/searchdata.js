@@ -1,8 +1,8 @@
 var indexSectionsWithContent =
 {
-  0: "csv",
+  0: "cs",
   1: "c",
-  2: "sv",
+  2: "s",
   3: "s"
 };
 
