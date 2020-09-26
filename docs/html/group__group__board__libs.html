@@ -119,6 +119,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:gacaad29bc13d3a4cd243830980b21c274"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__board__libs.html#gacaad29bc13d3a4cd243830980b21c274">cy_serial_flash_qspi_get_erase_size</a> (uint32_t addr)</td></tr>
 <tr class="memdesc:gacaad29bc13d3a4cd243830980b21c274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size of the erase sector to which the given address belongs.  <a href="#gacaad29bc13d3a4cd243830980b21c274">More...</a><br /></td></tr>
 <tr class="separator:gacaad29bc13d3a4cd243830980b21c274"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3b4219e6b1182c0c75704581b6cacc37"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__board__libs.html#ga3b4219e6b1182c0c75704581b6cacc37">cy_serial_flash_qspi_get_prog_size</a> (uint32_t addr)</td></tr>
+<tr class="memdesc:ga3b4219e6b1182c0c75704581b6cacc37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the page size for programming of the sector to which the given address belongs.  <a href="#ga3b4219e6b1182c0c75704581b6cacc37">More...</a><br /></td></tr>
+<tr class="separator:ga3b4219e6b1182c0c75704581b6cacc37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1aec27b28a9ce3205ce16e12c4d576b0"><td class="memItemLeft" align="right" valign="top">__STATIC_INLINE uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__board__libs.html#ga1aec27b28a9ce3205ce16e12c4d576b0">cy_serial_flash_get_sector_start_address</a> (uint32_t addr)</td></tr>
 <tr class="memdesc:ga1aec27b28a9ce3205ce16e12c4d576b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Utility function to calculate the starting address of an erase sector to which the given address belongs.  <a href="#ga1aec27b28a9ce3205ce16e12c4d576b0">More...</a><br /></td></tr>
 <tr class="separator:ga1aec27b28a9ce3205ce16e12c4d576b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,6 +137,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:ga56772d2543b7b7f2c17ed9ddb9db941e"><td class="memItemLeft" align="right" valign="top">cy_rslt_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__board__libs.html#ga56772d2543b7b7f2c17ed9ddb9db941e">cy_serial_flash_qspi_enable_xip</a> (bool enable)</td></tr>
 <tr class="memdesc:ga56772d2543b7b7f2c17ed9ddb9db941e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables Execute-in-Place (memory mapped) mode on the MCU.  <a href="#ga56772d2543b7b7f2c17ed9ddb9db941e">More...</a><br /></td></tr>
 <tr class="separator:ga56772d2543b7b7f2c17ed9ddb9db941e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga818e617f0abbff49f43ee1254d7bc35c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__board__libs.html#ga818e617f0abbff49f43ee1254d7bc35c">cy_serial_flash_qspi_set_interrupt_priority</a> (uint8_t priority)</td></tr>
+<tr class="memdesc:ga818e617f0abbff49f43ee1254d7bc35c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Changes QSPI interrupt priority.  <a href="#ga818e617f0abbff49f43ee1254d7bc35c">More...</a><br /></td></tr>
+<tr class="separator:ga818e617f0abbff49f43ee1254d7bc35c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="gaa9c587684b8b629a0fde56e786400d82"></a>
@@ -236,7 +242,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramname">io7</td><td>Data/IO pin 7 connected to the memory, Pass NC when unused. </td></tr>
     <tr><td class="paramname">sclk</td><td>Clock pin connected to the memory </td></tr>
     <tr><td class="paramname">ssel</td><td>Slave select pin connected to the memory </td></tr>
-    <tr><td class="paramname">hz</td><td>Clock frequency to be used with the memory. This parameter is ignored currently. Change the CLK_HF frequency using either the Device Configurator tool or the clock driver. </td></tr>
+    <tr><td class="paramname">hz</td><td>Clock frequency to be used with the memory. </td></tr>
   </table>
   </dd>
 </dl>
@@ -289,6 +295,33 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Erase sector size in bytes. </dd></dl>
+
+</div>
+</div>
+<a id="ga3b4219e6b1182c0c75704581b6cacc37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3b4219e6b1182c0c75704581b6cacc37">&#9670;&nbsp;</a></span>cy_serial_flash_qspi_get_prog_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t cy_serial_flash_qspi_get_prog_size </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>addr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the page size for programming of the sector to which the given address belongs. </p>
+<p>Address is used only for a memory with hybrid sector size. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">addr</td><td>Address that belongs to the sector for which size is returned. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Page size in bytes. </dd></dl>
 
 </div>
 </div>
@@ -472,6 +505,32 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CY_RSLT_SUCCESS if the operation was successful. CY_RSLT_SERIAL_FLASH_ERR_UNSUPPORTED if the target does not support XIP. </dd></dl>
+
+</div>
+</div>
+<a id="ga818e617f0abbff49f43ee1254d7bc35c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga818e617f0abbff49f43ee1254d7bc35c">&#9670;&nbsp;</a></span>cy_serial_flash_qspi_set_interrupt_priority()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cy_serial_flash_qspi_set_interrupt_priority </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>priority</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Changes QSPI interrupt priority. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">priority</td><td>interrupt priority to be set </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

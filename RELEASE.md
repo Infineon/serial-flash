@@ -8,6 +8,9 @@ Provides functions for interacting with an external flash connected through its 
 * Allows for providing information to the programming tool to program the external memory.
 
 ### What Changed?
+#### v1.0.2
+* Added new function cy_serial_flash_qspi_get_prog_size() to get the programming size
+* Minor documentation updates
 #### v1.0.1
 * Minor update for documentation & branding
 #### v1.0.0
@@ -18,10 +21,12 @@ This version of the Serial Flash library was validated for compatibility with th
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 2.0     |
-| GCC Compiler                              | 7.4     |
-| IAR Compiler                              | 8.32    |
+| ModusToolbox Software Environment         | 2.1     |
+| GCC Compiler                              | 9.2     |
+| IAR Compiler                              | 8.4     |
 | ARM Compiler 6                            | 6.11    |
+
+Minimum required ModusToolbox Software Environment: v2.0
 
 ### More information
 
