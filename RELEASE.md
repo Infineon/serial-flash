@@ -8,8 +8,16 @@ Provides functions for interacting with an external flash connected through its 
 * Allows for providing information to the programming tool to program the external memory.
 
 ### What Changed?
+#### v1.1.0
+* Added the following functions:
+    - `cy_serial_flash_qspi_read_async()` - Supports asynchronous (non-blocking) read using fixed DMA resources. Refer to the API reference manual for details on the list of devices supported for DMA operation and the exact DMA resources used.
+    - `cy_serial_flash_qspi_abort_read()` - Aborts an ongoing asynchronous read operation
+    - `cy_serial_flash_qspi_set_dma_interrupt_priority()` - Changes the DMA interrupt priority
+* Implemented thread-safety for use with multi-threaded RTOS environment using the [abstraction-rtos](https://github.com/cypresssemiconductorco/abstraction-rtos) library
+    - Add `DEFINES=CY_SERIAL_FLASH_QSPI_THREAD_SAFE` in the Makefile to enable thread-safety
+* Updated `cy_serial_flash_qspi_get_erase_size()` to support memories with hybrid sectors
 #### v1.0.2
-* Added new function cy_serial_flash_qspi_get_prog_size() to get the programming size
+* Added new function `cy_serial_flash_qspi_get_prog_size()` to get the programming size
 * Minor documentation updates
 #### v1.0.1
 * Minor update for documentation & branding
@@ -22,7 +30,7 @@ This version of the Serial Flash library was validated for compatibility with th
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
 | ModusToolbox Software Environment         | 2.1     |
-| GCC Compiler                              | 9.2     |
+| GCC Compiler                              | 9.3     |
 | IAR Compiler                              | 8.4     |
 | ARM Compiler 6                            | 6.11    |
 
@@ -39,4 +47,4 @@ Minimum required ModusToolbox Software Environment: v2.0
 * [PSoC 6 Resources - KBA223067](https://community.cypress.com/docs/DOC-14644)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2020.
+© Cypress Semiconductor Corporation, 2019-2021.
