@@ -8,7 +8,9 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2021 Cypress Semiconductor Corporation
+ * Copyright 2018-2021 Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +89,7 @@ extern "C" {
     #define RX_DMA_INSTANCE             DW1
     #define RX_DMA_CHANNEL_NUM          (15lu)
     #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw1_0_IRQn)
-#elif defined(CY_DEVICE_PSOC6A2M) || defined(CY_DEVICE_PSOC6A512K) || defined(CY_DEVICE_PSOC6256K)
+#elif defined(CY_DEVICE_PSOC6A2M) || defined(CY_DEVICE_PSOC6A512K) || defined(CY_DEVICE_PSOC6A256K)
 /* In these devices, only 1to1 triggers are available between SMIF and a
  * specific combination of DW instances and channel numbers.
  * i.e. TX trigger request from SMIF can connect only to DW1 CH22 and
@@ -216,11 +218,20 @@ cy_rslt_t cy_serial_flash_qspi_init(
     cyhal_gpio_t ssel,
     uint32_t hz)
 {
+    cy_rslt_t result;
     cy_en_smif_status_t smif_status = CY_SMIF_SUCCESS;
 
+    #if (CYHAL_API_VERSION >= 2)
+    cyhal_qspi_slave_pin_config_t memory_pin_set =
+    {
+        .io   = { io0, io1, io2, io3, io4, io5, io6, io7 },
+        .ssel = ssel
+    };
 
-    cy_rslt_t result = cyhal_qspi_init(&qspi_obj, io0, io1, io2, io3, io4, io5, io6, io7,
-                                       sclk, ssel, hz, 0);
+    result = cyhal_qspi_init(&qspi_obj, sclk, &memory_pin_set, hz, 0, NULL);
+    #else // HAL API version 1
+    result = cyhal_qspi_init(&qspi_obj, io0, io1, io2, io3, io4, io5, io6, io7, sclk, ssel, hz, 0);
+    #endif
 
     qspi_mem_config[MEM_SLOT] = (cy_stc_smif_mem_config_t*)mem_config;
 

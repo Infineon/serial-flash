@@ -10,7 +10,9 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2021 Cypress Semiconductor Corporation
+ * Copyright 2018-2021 Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,9 +35,11 @@
  * provides support for informing programming tools about the external memory so it can be
  * be written at the same time as internal flash. This support can be enabled by defining
  * CY_ENABLE_XIP_PROGRAM while building the application. With this define in place, code
- * will be generated in the .cy_sflash_user_data & .cy_toc_part2 sections. These locations
- * can be read by programming tools (eg: Cypress Programmer, OpenOCD, pyOCD) to know that
- * there is a memory device attached and how to program it.
+ * will be generated in the .cy_sflash_user_data & .cy_toc_part2 sections. These sections
+ * must be provided by the linker script for the application. One the application has been
+ * built, these locations can be read by programming tools (eg: Cypress Programmer, OpenOCD,
+ * pyOCD) to know that there is a memory device attached and how to program it.
+ * \note This support is not compatible with the PSoC™ 64 series of devices.
  * \} group_board_libs
  */
 

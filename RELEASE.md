@@ -8,12 +8,14 @@ Provides functions for interacting with an external flash connected through its 
 * Allows for providing information to the programming tool to program the external memory.
 
 ### What Changed?
+#### v1.2.0
+* Added support for HAL API v1 or v2
 #### v1.1.0
 * Added the following functions:
     - `cy_serial_flash_qspi_read_async()` - Supports asynchronous (non-blocking) read using fixed DMA resources. Refer to the API reference manual for details on the list of devices supported for DMA operation and the exact DMA resources used.
     - `cy_serial_flash_qspi_abort_read()` - Aborts an ongoing asynchronous read operation
     - `cy_serial_flash_qspi_set_dma_interrupt_priority()` - Changes the DMA interrupt priority
-* Implemented thread-safety for use with multi-threaded RTOS environment using the [abstraction-rtos](https://github.com/cypresssemiconductorco/abstraction-rtos) library
+* Implemented thread-safety for use with multi-threaded RTOS environment using the [abstraction-rtos](https://github.com/infineon/abstraction-rtos) library
     - Add `DEFINES=CY_SERIAL_FLASH_QSPI_THREAD_SAFE` in the Makefile to enable thread-safety
 * Updated `cy_serial_flash_qspi_get_erase_size()` to support memories with hybrid sectors
 #### v1.0.2
@@ -29,22 +31,22 @@ This version of the Serial Flash library was validated for compatibility with th
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 2.1     |
-| GCC Compiler                              | 9.3     |
+| ModusToolbox™ Software Environment        | 2.4.0   |
+| GCC Compiler                              | 10.3.1  |
 | IAR Compiler                              | 8.4     |
 | ARM Compiler 6                            | 6.11    |
 
-Minimum required ModusToolbox Software Environment: v2.0
+Minimum required ModusToolbox™ Software Environment: v2.0
 
 ### More information
 
-* [API Reference Guide](https://cypresssemiconductorco.github.io/serial-flash/html/index.html)
+* [API Reference Guide](https://infineon.github.io/serial-flash/html/index.html)
 * [Cypress Semiconductor, an Infineon Technologies Company](http://www.cypress.com)
-* [Cypress Semiconductor GitHub](https://github.com/cypresssemiconductorco)
-* [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
-* [PSoC 6 Code Examples using ModusToolbox IDE](https://github.com/cypresssemiconductorco/Code-Examples-for-ModusToolbox-Software)
-* [PSoC 6 Middleware](https://github.com/cypresssemiconductorco/psoc6-middleware)
-* [PSoC 6 Resources - KBA223067](https://community.cypress.com/docs/DOC-14644)
+* [Infineon GitHub](https://github.com/infineon)
+* [ModusToolbox™](https://www.cypress.com/products/modustoolbox-software-environment)
+* [PSoC™ 6 Code Examples using ModusToolbox™ IDE](https://github.com/infineon/Code-Examples-for-ModusToolbox-Software)
+* [ModusToolbox™ Software](https://github.com/Infineon/modustoolbox-software)
+* [PSoC™ 6 Resources - KBA223067](https://community.cypress.com/docs/DOC-14644)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2021.
+© Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation, 2019-2021.
