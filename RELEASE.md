@@ -8,6 +8,8 @@ Provides functions for interacting with an external flash connected through its 
 * Allows for providing information to the programming tool to program the external memory.
 
 ### What Changed?
+#### v1.3.0
+* Added support for CAT1B device - CYW20829.
 #### v1.2.0
 * Added support for HAL API v1 or v2
 #### v1.1.0

@@ -8,7 +8,7 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2021 Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2018-2022 Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -83,7 +83,7 @@ extern "C" {
 
 /**
  * Callback pointer to use with \ref cy_serial_flash_qspi_read_async().
- * \param peration_status Status of the read operation
+ * \param operation_status Status of the read operation
  * \param callback_arg Pointer to be passed back to the callback function
  */
 typedef void (* cy_serial_flash_qspi_read_complete_callback_t)(cy_rslt_t operation_status,

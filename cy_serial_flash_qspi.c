@@ -8,7 +8,7 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2021 Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2018-2022 Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -100,6 +100,10 @@ extern "C" {
     #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw1_0_IRQn)
 
     #define DEVICE_GROUP_1TO1_TRIGGER
+#elif defined(CY_DEVICE_CYW20829)
+    #define RX_DMA_INSTANCE             DW0
+    #define RX_DMA_CHANNEL_NUM          (0u)
+    #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw0_0_IRQn)
 #else // if defined(CY_DEVICE_PSOC6ABLE2)
     #define DMA_UNSUPPORTED
 #endif // if defined(CY_DEVICE_PSOC6ABLE2)
@@ -188,13 +192,18 @@ static cy_rslt_t _init_dma(void);
 static cy_rslt_t _deinit_dma(void);
 static void _rx_dma_irq_handler(void);
 static cy_en_smif_status_t _read_next_chunk(void);
+#if !defined(CY_DEVICE_CYW20829)
 static void _value_to_byte_array(uint32_t value, uint8_t* byte_array, uint32_t start_pos,
                                  uint32_t size);
-
+#endif /* #if !defined(CY_DEVICE_CYW20829) */
 #endif /* #ifndef DMA_UNSUPPORTED */
 
 static inline cy_rslt_t _mutex_acquire(void);
 static inline cy_rslt_t _mutex_release(void);
+
+#if defined(CY_DEVICE_CYW20829)
+static cy_stc_smif_context_t SMIFContext;
+#endif /* defined(CY_DEVICE_CYW20829) */
 
 //--------------------------------------------------------------------------------------------------
 // cy_serial_flash_qspi_init
@@ -218,20 +227,27 @@ cy_rslt_t cy_serial_flash_qspi_init(
     cyhal_gpio_t ssel,
     uint32_t hz)
 {
-    cy_rslt_t result;
+    cy_rslt_t result = CY_RSLT_SUCCESS;
     cy_en_smif_status_t smif_status = CY_SMIF_SUCCESS;
 
     #if (CYHAL_API_VERSION >= 2)
+    // SMIF is already initialized for 20829 hence we can skip calling cyhal_qspi_init.
+    // initializing only the SMIF base address and the context variables for 20829.
+    #if defined(CY_DEVICE_CYW20829)
+    qspi_obj.base = SMIF0;
+    qspi_obj.context = SMIFContext;
+    #else /* defined(CY_DEVICE_CYW20829) */
     cyhal_qspi_slave_pin_config_t memory_pin_set =
     {
         .io   = { io0, io1, io2, io3, io4, io5, io6, io7 },
         .ssel = ssel
     };
-
     result = cyhal_qspi_init(&qspi_obj, sclk, &memory_pin_set, hz, 0, NULL);
-    #else // HAL API version 1
+    #endif /* defined(CY_DEVICE_CYW20829) */
+
+    #else /* HAL API version 1 */
     result = cyhal_qspi_init(&qspi_obj, io0, io1, io2, io3, io4, io5, io6, io7, sclk, ssel, hz, 0);
-    #endif
+    #endif /* HAL API version 1 */
 
     qspi_mem_config[MEM_SLOT] = (cy_stc_smif_mem_config_t*)mem_config;
 
@@ -264,26 +280,25 @@ cy_rslt_t cy_serial_flash_qspi_init(
                                                   CY_SERIAL_FLASH_QUAD_ENABLE_TIMEOUT_US,
                                                   &qspi_obj.context);
                 }
+            }
+            if (CY_SMIF_SUCCESS == smif_status)
+            {
+                #ifndef DMA_UNSUPPORTED
+                result = _init_dma();
 
-                if (CY_SMIF_SUCCESS == smif_status)
+                if (CY_RSLT_SUCCESS == result)
                 {
-                    #ifndef DMA_UNSUPPORTED
-                    result = _init_dma();
+                    SET_FLAG(FLAG_DMA_INIT_DONE);
+                #endif /* #ifndef DMA_UNSUPPORTED */
 
-                    if (CY_RSLT_SUCCESS == result)
-                    {
-                        SET_FLAG(FLAG_DMA_INIT_DONE);
-                    #endif /* #ifndef DMA_UNSUPPORTED */
+                #if defined(CY_SERIAL_FLASH_QSPI_THREAD_SAFE)
+                /* Initialize the mutex */
+                result = cy_rtos_init_mutex(&serial_flash_mutex);
+                #endif /* #if defined(CY_SERIAL_FLASH_QSPI_THREAD_SAFE) */
 
-                    #if defined(CY_SERIAL_FLASH_QSPI_THREAD_SAFE)
-                    /* Initialize the mutex */
-                    result = cy_rtos_init_mutex(&serial_flash_mutex);
-                    #endif /* #if defined(CY_SERIAL_FLASH_QSPI_THREAD_SAFE) */
-
-                    #ifndef DMA_UNSUPPORTED
-                }
-                    #endif /* #ifndef DMA_UNSUPPORTED */
-                }
+                #ifndef DMA_UNSUPPORTED
+            }
+                #endif /* #ifndef DMA_UNSUPPORTED */
             }
         }
     }
@@ -311,6 +326,9 @@ void cy_serial_flash_qspi_deinit(void)
 
     if (IS_FLAG_SET(FLAG_QSPI_HAL_INIT_DONE))
     {
+        /* For CYW20829, BOOTROM enables XIP by default and user is not expected to
+           disable memory while in XIP */
+        #if !defined(CY_DEVICE_CYW20829)
         if (qspi_obj.base != NULL)
         {
             /* There is no harm in calling this even if Cy_SMIF_MemInit() did
@@ -320,6 +338,7 @@ void cy_serial_flash_qspi_deinit(void)
         }
 
         cyhal_qspi_free(&qspi_obj);
+        #endif /* !defined(CY_DEVICE_CYW20829) */
         CLEAR_FLAG(FLAG_QSPI_HAL_INIT_DONE);
 
         #ifndef DMA_UNSUPPORTED
@@ -605,7 +624,11 @@ cy_rslt_t cy_serial_flash_qspi_enable_xip(bool enable)
 //--------------------------------------------------------------------------------------------------
 void cy_serial_flash_qspi_set_interrupt_priority(uint8_t priority)
 {
+    #if defined(CY_DEVICE_CYW20829)
+    NVIC_SetPriority(smif_interrupt_normal_IRQn, priority);
+    #else /* defined(CY_DEVICE_CYW20829) */
     NVIC_SetPriority(smif_interrupt_IRQn, priority);
+    #endif /* defined(CY_DEVICE_CYW20829) */
 }
 
 
@@ -630,7 +653,9 @@ static cy_en_smif_status_t _read_next_chunk(void)
 {
     cy_en_smif_status_t smif_status = CY_SMIF_SUCCESS;
     uint32_t chunk;
+    #if !defined(CY_DEVICE_CYW20829)
     uint8_t addr_array[CY_SMIF_FOUR_BYTES_ADDR] = { 0U };
+    #endif /* !defined(CY_DEVICE_CYW20829) */
 
     if (read_txfr_info.length > 0UL)
     {
@@ -657,8 +682,18 @@ static cy_en_smif_status_t _read_next_chunk(void)
         }
 
         dma_descr_config.dstAddress = (void*)read_txfr_info.buf;
+        #if defined(CY_DEVICE_CYW20829)
+        dma_descr_config.dataSize = CY_DMA_BYTE;
+        dma_descr_config.srcTransferSize = CY_DMA_TRANSFER_SIZE_DATA,
+        dma_descr_config.srcXincrement = 1;
+        dma_descr_config.srcAddress =
+            (void*)(qspi_block_config.memConfig[MEM_SLOT]->baseAddress + read_txfr_info.addr);
+        #endif /* defined(CY_DEVICE_CYW20829) */
         Cy_DMA_Descriptor_Init(&dma_descr, &dma_descr_config);
 
+        #if defined(CY_DEVICE_CYW20829)
+        Cy_TrigMux_SwTrigger(TRIG_OUT_MUX_0_PDMA0_TR_IN0, CY_TRIGGER_TWO_CYCLES);
+        #else /* defined(CY_DEVICE_CYW20829) */
         /* Pass NULL for buffer (and callback) so that the function does not
          * set up FIFO interrupt. We don't need FIFO interrupt to be setup
          * since we will be using DMA.
@@ -669,6 +704,7 @@ static cy_en_smif_status_t _read_next_chunk(void)
                                          addr_array, NULL, chunk, NULL, &qspi_obj.context);
 
         if (CY_SMIF_SUCCESS == smif_status)
+        #endif /* defined(CY_DEVICE_CYW20829) */
         {
             /* Recalculate the next rxBuffer offset */
             read_txfr_info.length -= chunk;
@@ -715,7 +751,9 @@ static cy_rslt_t _init_dma(void)
             #if defined(DEVICE_GROUP_1TO1_TRIGGER)
             result = (cy_rslt_t)Cy_TrigMux_Select(TRIG_OUT_1TO1_3_SMIF_RX_TO_PDMA1_TR_IN23, false,
                                                   TRIGGER_TYPE_LEVEL);
-            #else
+            #else //defined(DEVICE_GROUP_1TO1_TRIGGER)
+            #if !defined(CY_DEVICE_CYW20829)
+
             result = (cy_rslt_t)Cy_TrigMux_Connect(TRIG13_IN_SMIF_TR_RX_REQ,
                                                    TRIG13_OUT_TR_GROUP0_INPUT42, false,
                                                    TRIGGER_TYPE_LEVEL);
@@ -726,6 +764,7 @@ static cy_rslt_t _init_dma(void)
                                                        TRIG1_OUT_CPUSS_DW1_TR_IN15, false,
                                                        TRIGGER_TYPE_LEVEL);
             }
+            #endif /*defined(CY_DEVICE_CYW20829)*/
             #endif /* #if defined(DEVICE_GROUP_1TO1_TRIGGER) */
         }
     }
@@ -809,6 +848,7 @@ static void _rx_dma_irq_handler(void)
 }
 
 
+#if !defined(CY_DEVICE_CYW20829)
 /*******************************************************************************
 * Function Name: _value_to_byte_array
 ****************************************************************************//**
@@ -843,6 +883,8 @@ static void _value_to_byte_array(uint32_t value, uint8_t* byte_array, uint32_t s
     } while (size > 0U);
 }
 
+
+#endif /* #if !defined(CY_DEVICE_CYW20829)*/
 
 #endif /* #ifndef DMA_UNSUPPORTED */
 
