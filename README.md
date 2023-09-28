@@ -19,7 +19,7 @@ Provides functions for interacting with an external flash connected through its 
 3. See the [PSoC™ 6 MCU: QSPI Flash Read and Write](https://github.com/infineon/mtb-example-psoc6-qspi-readwrite) code example to learn using this library
 
 **NOTE:**
-If you delete the contents of the GeneratedSource directory inside the BSP, you must re-generate the memory configuration files *cycfg_qspi_memslot.c/.h*. To do this from inside the ModusToolbox™ IDE, open the QSPI Configurator tool from the Quick Panel and press **Ctrl+S** or click **File > Save**. If you open the tool outside the IDE, you need to first open the *design.cyqspi* file in the tool. To do this, click **File > Import** and then locate the file inside the BSP under *COMPONENT_BSP_DESIGN_MODUS* directory.
+If you delete the contents of the GeneratedSource directory inside the BSP, you must re-generate the memory configuration files *cycfg_qspi_memslot.c/.h*. To do this from inside the ModusToolbox™ IDE, open the QSPI Configurator tool from the Quick Panel and press **Ctrl+S** or click **File > Save**. If you open the tool outside the IDE, you need to first open the *design.cyqspi* file in the tool. To do this, click **File > Import** and then locate the file inside the BSP under *config* directory.
 
 **NOTE:**
 For devices with no internal flash (eg:CAT1B device CYW20829), user needs to disable 'config data in flash' option in QSPI Configurator.

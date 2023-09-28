@@ -32,6 +32,9 @@
 #include "cy_trigmux.h"
 #include "cy_dma.h"
 #include "cy_utils.h"
+#if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ)
+#include "cyhal_irq_impl.h"
+#endif /* defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ) */
 
 #if defined(CY_SERIAL_FLASH_QSPI_THREAD_SAFE)
 #include <stdlib.h>
@@ -89,6 +92,7 @@ extern "C" {
     #define RX_DMA_INSTANCE             DW1
     #define RX_DMA_CHANNEL_NUM          (15lu)
     #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw1_0_IRQn)
+    #define CY_SERIAL_FLASH_SMIF_IRQn   (smif_interrupt_IRQn)
 #elif defined(CY_DEVICE_PSOC6A2M) || defined(CY_DEVICE_PSOC6A512K) || defined(CY_DEVICE_PSOC6A256K)
 /* In these devices, only 1to1 triggers are available between SMIF and a
  * specific combination of DW instances and channel numbers.
@@ -98,18 +102,27 @@ extern "C" {
     #define RX_DMA_INSTANCE             DW1
     #define RX_DMA_CHANNEL_NUM          (23lu)
     #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw1_0_IRQn)
-
+    #define CY_SERIAL_FLASH_SMIF_IRQn   (smif_interrupt_IRQn)
     #define DEVICE_GROUP_1TO1_TRIGGER
+    #define ONE_TO_ONE_TRIGGER_NAME     (TRIG_OUT_1TO1_3_SMIF_RX_TO_PDMA1_TR_IN23)
 #elif defined(CY_DEVICE_CYW20829)
     #define RX_DMA_INSTANCE             DW0
     #define RX_DMA_CHANNEL_NUM          (0u)
     #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw0_0_IRQn)
+    #define CY_SERIAL_FLASH_SMIF_IRQn   (smif_interrupt_normal_IRQn)
+#elif defined(CY_DEVICE_TVIIBH4M) || defined(CY_DEVICE_TVIIBH8M)
+    #define RX_DMA_INSTANCE             DW1
+    #define RX_DMA_CHANNEL_NUM          (54u)
+    #define RX_DMA_CH0_IRQn             (cpuss_interrupts_dw1_0_IRQn)
+    #define CY_SERIAL_FLASH_SMIF_IRQn   (smif_0_interrupt_IRQn)
+    #define DEVICE_GROUP_1TO1_TRIGGER
+    #define ONE_TO_ONE_TRIGGER_NAME     (TRIG_OUT_1TO1_3_SMIF_RX_TO_PDMA1)
 #else // if defined(CY_DEVICE_PSOC6ABLE2)
     #define DMA_UNSUPPORTED
 #endif // if defined(CY_DEVICE_PSOC6ABLE2)
 
 #define DMA_CHANNEL_PRIORITY            (3lu)
-#define DMA_INTR_PRIORITY               (7lu)
+#define DMA_INTR_PRIORITY               ((uint8_t)((1u << __NVIC_PRIO_BITS) - 1u))
 
 /** \endcond */
 
@@ -624,11 +637,11 @@ cy_rslt_t cy_serial_flash_qspi_enable_xip(bool enable)
 //--------------------------------------------------------------------------------------------------
 void cy_serial_flash_qspi_set_interrupt_priority(uint8_t priority)
 {
-    #if defined(CY_DEVICE_CYW20829)
-    NVIC_SetPriority(smif_interrupt_normal_IRQn, priority);
-    #else /* defined(CY_DEVICE_CYW20829) */
-    NVIC_SetPriority(smif_interrupt_IRQn, priority);
-    #endif /* defined(CY_DEVICE_CYW20829) */
+    #if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ)
+    _cyhal_irq_set_priority(CY_SERIAL_FLASH_SMIF_IRQn, priority);
+    #else
+    NVIC_SetPriority(CY_SERIAL_FLASH_SMIF_IRQn, priority);
+    #endif /* defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ) or other */
 }
 
 
@@ -638,7 +651,11 @@ void cy_serial_flash_qspi_set_interrupt_priority(uint8_t priority)
 void cy_serial_flash_qspi_set_dma_interrupt_priority(uint8_t priority)
 {
     #ifndef DMA_UNSUPPORTED
+    #if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ)
+    _cyhal_irq_set_priority((_cyhal_system_irq_t)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM), priority);
+    #else
     NVIC_SetPriority((IRQn_Type)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM), priority);
+    #endif /* #if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ) or other */
     #else
     CY_UNUSED_PARAMETER(priority);
     #endif /* #ifndef DMA_UNSUPPORTED */
@@ -736,20 +753,23 @@ static cy_rslt_t _init_dma(void)
         Cy_DMA_Channel_SetInterruptMask(RX_DMA_INSTANCE, RX_DMA_CHANNEL_NUM, CY_DMA_INTR_MASK);
         Cy_DMA_Enable(RX_DMA_INSTANCE);
 
+        #if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ)
+        _cyhal_irq_register((_cyhal_system_irq_t)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM),
+                            DMA_INTR_PRIORITY,
+                            _rx_dma_irq_handler);
+        _cyhal_irq_enable((_cyhal_system_irq_t)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM));
+        #else
         /* Configure interrupt for RX DMA */
         cy_stc_sysint_t dma_intr_config =
             { .intrSrc        = (IRQn_Type)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM),
               .intrPriority   = DMA_INTR_PRIORITY };
-
         result = (cy_rslt_t)Cy_SysInt_Init(&dma_intr_config, _rx_dma_irq_handler);
-
         if (CY_RSLT_SUCCESS == result)
+        #endif /* defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ) or other */
         {
-            NVIC_EnableIRQ(dma_intr_config.intrSrc);
-
             /* Configure the trigger mux */
             #if defined(DEVICE_GROUP_1TO1_TRIGGER)
-            result = (cy_rslt_t)Cy_TrigMux_Select(TRIG_OUT_1TO1_3_SMIF_RX_TO_PDMA1_TR_IN23, false,
+            result = (cy_rslt_t)Cy_TrigMux_Select(ONE_TO_ONE_TRIGGER_NAME, false,
                                                   TRIGGER_TYPE_LEVEL);
             #else //defined(DEVICE_GROUP_1TO1_TRIGGER)
             #if !defined(CY_DEVICE_CYW20829)
@@ -786,7 +806,11 @@ static cy_rslt_t _deinit_dma(void)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
 
+    #if defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ)
+    _cyhal_irq_disable((_cyhal_system_irq_t)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM));
+    #else
     NVIC_DisableIRQ((IRQn_Type)(RX_DMA_CH0_IRQn + RX_DMA_CHANNEL_NUM));
+    #endif /* defined(_CYHAL_DRIVER_AVAILABLE_IRQ) && (_CYHAL_DRIVER_AVAILABLE_IRQ) */
 
     /* Disable only the channel, not the DW instance as it may be used by other
      * part of the application.
@@ -797,7 +821,7 @@ static cy_rslt_t _deinit_dma(void)
     cyhal_hwmgr_free(&DW_obj);
 
     #if defined(DEVICE_GROUP_1TO1_TRIGGER)
-    result = (cy_rslt_t)Cy_TrigMux_Deselect(TRIG_OUT_1TO1_3_SMIF_RX_TO_PDMA1_TR_IN23);
+    result = (cy_rslt_t)Cy_TrigMux_Deselect(ONE_TO_ONE_TRIGGER_NAME);
     #else
     /* No PDL function is available for handling deinit for non-1to1 trigger muxes. */
     #endif /* #if defined(DEVICE_GROUP_1TO1_TRIGGER) */
