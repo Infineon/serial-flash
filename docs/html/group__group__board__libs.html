@@ -541,7 +541,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Reads data from the serial flash memory. </p>
-<p >This is a non-blocking function. Returns error if (addr + length) exceeds the flash size. Uses fixed DMA (DW) instance and channel for transferring the data from QSPI RX FIFO to the user-provided buffer. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >This is a non-blocking function. Returns error if (addr + length) exceeds the flash size. Uses fixed DMA (DW) instance and channel for transferring the data from QSPI RX FIFO to the user-provided buffer.</p>
+<dl class="section note"><dt>Note</dt><dd>If D-cache is enabled, this function cleans the D-cache of the DMA descriptor. The data Cache line is 32 bytes. The user needs to make sure that the buf pointer passed to the cy_serial_flash_qspi_read_async function points to a 32 byte aligned array of words that contains the buffer i.e. the size of buffer must be a multiple of 32 bytes to ensure cache coherency. CY_ALIGN(__SCB_DCACHE_LINE_SIZE) macro can be used for 32 byte alignment.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">addr</td><td>Starting address to read from </td></tr>
     <tr><td class="paramname">length</td><td>Number of data bytes to read </td></tr>
